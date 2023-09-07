@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load pybo_filter %}
+{% load static %}
 {% block content %}
 <div class="container my-3">
     <div class="row my-3">
@@ -93,6 +94,9 @@
     </ul>
     <!-- 페이징처리 끝 -->
 </div>
+<div id="pump-control-container"></div>
+<div id="alert-container"></div>
+
 <form id="searchForm" method="get" action="{% url 'index' %}">
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ page }}">
@@ -101,19 +105,34 @@
 
 <!-- Script -->
 {% block script %}
-<script type='text/javascript'>
-const page_elements = document.getElementsByClassName("page-link");
-Array.from(page_elements).forEach(function(element) {
-    element.addEventListener('click', function() {
-        document.getElementById('page').value = this.dataset.page;
+<script type='module'>
+    import { PumpControlBox } from "{% static 'js/components/pump-control-box.js' %}";
+    import { AlertBox } from "{% static 'js/components/alert-box.js' %}";
+
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function(element) {
+        element.addEventListener('click', function() {
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('searchForm').submit();
+        });
+    });
+    const btn_search = document.getElementById("btn_search");
+    btn_search.addEventListener('click', function() {
+        document.getElementById('kw').value = document.getElementById('search_kw').value;
+        document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
         document.getElementById('searchForm').submit();
     });
-});
-const btn_search = document.getElementById("btn_search");
-btn_search.addEventListener('click', function() {
-    document.getElementById('kw').value = document.getElementById('search_kw').value;
-    document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
-    document.getElementById('searchForm').submit();
-});
+
+    const pumpControlCnt = document.getElementById('pump-control-container');
+    const alertCnt = document.getElementById('alert-container');
+
+    const pump1 = new PumpControlBox(pumpControlCnt, 1, '15:12:19');
+    const pump2 = new PumpControlBox(pumpControlCnt, 2, '09:10:16');
+    const pump3 = new PumpControlBox(pumpControlCnt, 3, '12:03:21');
+
+    const alert1 = new AlertBox(alertCnt, '오류');
+    const alert2 = new AlertBox(alertCnt, '오류22222');
+    
 </script>
+
 {% endblock %}
